@@ -12,7 +12,6 @@ Historical_Daily_Sales = pd.read_excel("Daily Sales from 2016 to 12-17-2019.xlsx
 
 
 #Holiday Calendar
-#I added all of the holidays that Brenda is looking at.
 year = 2020
 month = 11
 day = 26
