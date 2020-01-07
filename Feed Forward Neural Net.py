@@ -16,7 +16,7 @@ CurrentMonth = CurrentDate.month
 CurrentDay = CurrentDate.day
 
 
-#def main():
+
 #training data
 trainingData = pd.read_csv("training_data.csv", encoding = "ISO-8859-1")
 
@@ -27,18 +27,6 @@ trainingData["Holiday?"] = trainingData["Holiday?"].replace(True,1).replace(Fals
 
 
 #BUILD THE NEURAL NETWORK
-
-
-##BALANCE THE DATA
-#Section not used. Although predictions were accurate, the model was flagging more accounts than necessary.
-
-#Problem = pd.DataFrame(trainingData[trainingData[:]["ActionRequired"] == 1])
-#NoProblem = pd.DataFrame(trainingData[trainingData[:]["ActionRequired"] == 0])
-#smallestSizedDf = min(len(Problem),len(NoProblem))
-#Problem = Problem[:smallestSizedDf]
-#NoProblem = NoProblem[:smallestSizedDf]
-##Recombine the data. It is now balanced with 50% problem items and 50% good items.
-#trainingData = pd.concat([Problem, NoProblem], axis = 0)
 
 #standardizing the input features/target
 from sklearn.preprocessing import StandardScaler
@@ -63,7 +51,7 @@ X.fillna(value=0, inplace= True)
 
 
 #We now split the input features and target variables into 
-#training dataset and test dataset. out test dataset will be 30% of our entire dataset.
+#training dataset and test dataset. Our test dataset will be 30% of our entire dataset.
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
@@ -84,16 +72,16 @@ NN_model.add(Dense(512, activation='relu'))
 NN_model.add(Dense(512, activation='relu'))
 #NN_model.add(Dropout(0.2))
 
-#Linear output. Lex's suggestion
+#Linear output
 NN_model.add(Dense(1))
-#Worked well
+
 #NN_model.add(Dense(1, activation = "relu")) #try tanh, leakyrelu, or linear, softplus (0+ outputs only), or relu (0+ values only)
 
 #Compiling the neural network
 from keras.optimizers import Adam
 from keras.optimizers import SGD
 epochs = 50
-opt = Adam(lr=0.001  , decay=1e-4 / 200) #lr = 1e-4 #Best model was this one I think
+opt = Adam(lr=0.001  , decay=1e-4 / 200) 
 #opt = Adam(lr=0.01) #lr = 1e-4
 #opt = SGD(lr=0.01, decay=1e-6 / epochs, momentum=0.9, nesterov=True) 
 
@@ -137,21 +125,6 @@ except Exception as e:
 
 
 
-#
-#
-#
-#print("True Positive (no problems)", cm[0][0], "False Positive", cm[0][1],"\n",
-#      "False Negative", cm[1][0], "True Negative (Problems Detected)", cm[1][1])
-#
-#print("Negative Accuracy = ", cm[1][1]/(cm[1][1]+cm[1][0]))
-#print("Positive Accuracy = ", cm[0][0]/(cm[0][0]+cm[0][1]))
-#print("Total Accuracy = ", (cm[0][0]+cm[1][1])/(cm[0][0]+cm[0][1]+cm[1][0]+cm[1][1]))
-
-
-
-
-
-
 
 
 ###LETS MAKE PREDICTIONS ON AN UNSEEN DATASET
@@ -172,9 +145,6 @@ X2 = pd.DataFrame(sc.transform(X2))
 #Replace na's with 0
 X2.fillna(value=0, inplace= True)
 
-#X2["STORE"] = SecondValidationSet["STORE"]
-#X2.set_index("STORE", inplace = True)
-
 Xnew = X2
 #Make predictions using the NN_model model
 ynew = NN_model.predict(Xnew)
@@ -184,21 +154,6 @@ SecondValidationSet["Prediction"] = ynew
 
 
 
-
-#
-##Dumb Conversions
-#Total_Budget = 346056737.23
-#SecondValidationSet["a"] = SecondValidationSet["Prediction"]
-#SecondValidationSet["b"] = (SecondValidationSet["a"] - SecondValidationSet["a"].min())/(SecondValidationSet["a"].max()-SecondValidationSet["a"].min())
-#
-#SecondValidationSet["Weight"] = SecondValidationSet["b"]*0.000152 #Scaled weights
-#SecondValidationSet["Total Yearly Budget"] = pd.read_excel("budget_column.xlsx")
-#SecondValidationSet["Allocation"] = SecondValidationSet["Total Yearly Budget"]*SecondValidationSet["Weight"]
-#SecondValidationSet["Allocation"] = SecondValidationSet["Allocation"]* Total_Budget/SecondValidationSet["Allocation"].sum()
-
 SecondValidationSet.pivot_table(index = 'Holiday?',columns = ["GL DAY"], values = "Prediction", aggfunc = "sum",margins=True).to_excel(f"{code_directory}/Excel outputs/AI Pivot {str(dt.datetime.now()).replace(':','.')[:-10]}.xlsx")
 SecondValidationSet.to_csv(f"{code_directory}/Excel outputs/AI Predictions {str(dt.datetime.now()).replace(':','.')[:-10]}.csv")
 
-
-#if __name__ == "__main__":
-#    main()
